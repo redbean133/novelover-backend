@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "start:gateway": "npm --prefix ./api-gateway start",
+    "start:user": "npm --prefix ./user-service start",
+    "start:novel": "npm --prefix ./novel-service start",
+    "start:all": "npm-run-all --parallel start:gateway start:user start:novel"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}
