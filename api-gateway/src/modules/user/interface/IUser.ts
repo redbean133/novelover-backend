@@ -24,11 +24,19 @@ export type AccountStatus = (typeof AccountStatus)[keyof typeof AccountStatus];
 export interface IUser {
   id: string;
   username: string;
-  displayName: string | null;
-  email: string | null;
+  displayName: string;
+  birthday: string;
+  email: string;
+  emailVerified: boolean;
   gender: Gender;
-  about: string | null;
+  about: string;
+  avatarUrl: string;
+  coverUrl: string;
   role: UserRole;
   status: AccountStatus;
-  deletedAt: Date | null;
+  deletedAt: string;
+  providerId: string;
+  providerType: string;
+  createdAt: string;
+  updatedAt: string;
 }
