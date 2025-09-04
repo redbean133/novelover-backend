@@ -6,11 +6,14 @@ import { ILoginResponse } from './interface/ILoginResponse';
 import { Observable } from 'rxjs';
 import { IRefreshTokenResponse } from './interface/IRefreshTokenResponse';
 import { IUser } from './interface/IUser';
+import { UpdateUserDTO } from './dto/updateUser.dto';
+import { UpdatePasswordDto } from './dto/updatePassword.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
+    @Inject('MEDIA_SERVICE') private readonly mediaServiceClient: ClientProxy,
   ) {}
 
   registerUser(createUserDto: CreateUserDto): Observable<IUser> {
@@ -19,6 +22,13 @@ export class UserService {
 
   login(loginDto: LocalLoginDto): Observable<ILoginResponse> {
     return this.userServiceClient.send({ cmd: 'user.login' }, loginDto);
+  }
+
+  loginWithGoogle(params: {
+    code: string;
+    deviceId?: string;
+  }): Observable<ILoginResponse> {
+    return this.userServiceClient.send({ cmd: 'user.google-login' }, params);
   }
 
   refreshToken(params: {
@@ -39,5 +49,38 @@ export class UserService {
 
   getUserInfo(userId: string): Observable<IUser> {
     return this.userServiceClient.send({ cmd: 'user.get-information' }, userId);
+  }
+
+  sendVerifyEmail(
+    userId: string,
+    email: string,
+  ): Observable<{ success: boolean; message: string }> {
+    return this.userServiceClient.send(
+      { cmd: 'user.send-verify-email' },
+      { userId, email },
+    );
+  }
+
+  verifyEmail(
+    token: string,
+  ): Observable<{ success: boolean; message: string }> {
+    return this.userServiceClient.send({ cmd: 'user.verify-email' }, token);
+  }
+
+  updateUserInfo(userId: string, updateData: UpdateUserDTO): Observable<IUser> {
+    return this.userServiceClient.send(
+      { cmd: 'user.update-information' },
+      { userId, updateData },
+    );
+  }
+
+  updatePassword(
+    userId: string,
+    updateData: UpdatePasswordDto,
+  ): Observable<{ success: boolean }> {
+    return this.userServiceClient.send(
+      { cmd: 'user.update-password' },
+      { userId, ...updateData },
+    );
   }
 }

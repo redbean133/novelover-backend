@@ -2,14 +2,19 @@ import {
   BadRequestException,
   Body,
   Controller,
+  FileTypeValidator,
   ForbiddenException,
   Get,
-  HttpException,
   Param,
+  ParseFilePipe,
+  Patch,
   Post,
+  Query,
   Req,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/createUser.dto';
@@ -19,6 +24,11 @@ import { LocalLoginDto } from './dto/localLogin.dto';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import type { IRequestWithUser } from 'src/common/interface/IRequestWithUser';
+import { UpdateUserDTO } from './dto/updateUser.dto';
+import { FileInterceptor } from '@nestjs/platform-express/multer';
+import { MediaService } from '../media/media.service';
+import { UpdatePasswordDto } from './dto/updatePassword.dto';
 
 @Controller('/user')
 export class UserController {
@@ -26,15 +36,12 @@ export class UserController {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly mediaService: MediaService,
   ) {}
 
   @Post('/register')
   async registerUser(@Body() createUserDto: CreateUserDto) {
-    try {
-      return await firstValueFrom(this.userService.registerUser(createUserDto));
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
+    return await firstValueFrom(this.userService.registerUser(createUserDto));
   }
 
   @Post('/login')
@@ -43,36 +50,66 @@ export class UserController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    try {
-      const { deviceId, accessToken, refreshToken } = await firstValueFrom(
-        this.userService.login({
-          ...loginDto,
-          deviceId: req.cookies?.['device-id'] as string,
-        }),
-      );
+    const { deviceId, accessToken, refreshToken } = await firstValueFrom(
+      this.userService.login({
+        ...loginDto,
+        deviceId: req.cookies?.['device-id'] as string,
+      }),
+    );
 
-      res.cookie('refresh-token', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 3600 * 1000,
-        path: '/user/refresh-token',
-      });
+    res.cookie('refresh-token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 3600 * 1000,
+      path: '/user/refresh-token',
+    });
 
-      res.cookie('device-id', deviceId, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: 365 * 24 * 3600 * 1000,
-        path: '/user/refresh-token',
-      });
+    res.cookie('device-id', deviceId, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 365 * 24 * 3600 * 1000,
+      path: '/user/refresh-token',
+    });
 
-      return {
-        accessToken,
-      };
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
+    return {
+      accessToken,
+    };
+  }
+
+  @Post('/google-login')
+  async loginWithGoogle(
+    @Body() body: { code: string },
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { deviceId, accessToken, refreshToken } = await firstValueFrom(
+      this.userService.loginWithGoogle({
+        code: body.code,
+        deviceId: req.cookies?.['device-id'] as string,
+      }),
+    );
+
+    res.cookie('refresh-token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 3600 * 1000,
+      path: '/user/refresh-token',
+    });
+
+    res.cookie('device-id', deviceId, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 365 * 24 * 3600 * 1000,
+      path: '/user/refresh-token',
+    });
+
+    return {
+      accessToken,
+    };
   }
 
   @Post('refresh-token')
@@ -88,7 +125,9 @@ export class UserController {
     if (!refreshTokenSecret)
       throw new Error('JWT refresh token secret is not configured');
 
-    const payload = await this.jwtService.verifyAsync(providedRefreshToken, {
+    const payload = await this.jwtService.verifyAsync<{
+      sub: string;
+    }>(providedRefreshToken, {
       secret: refreshTokenSecret,
     });
 
@@ -119,8 +158,11 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Post('logout')
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const userId = (req as any).user.sub as string;
+  async logout(
+    @Req() req: IRequestWithUser,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const userId = req.user.sub;
     if (!userId) throw new BadRequestException('User not identified');
 
     const deviceId = req.cookies?.['device-id'] as string;
@@ -135,10 +177,10 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Post('logout-all-devices')
   async logoutAll(
-    @Req() req: Request,
+    @Req() req: IRequestWithUser,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const userId = (req as any).user.sub as string;
+    const userId = req.user.sub;
     if (!userId) throw new BadRequestException('User not identified');
 
     await firstValueFrom(this.userService.logoutAllDevices({ userId }));
@@ -149,16 +191,93 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Get(':id')
-  async getUserInfo(@Req() req: Request, @Param('id') userId: string) {
-    try {
-      const currentUserId = (req as any).user.sub as string;
-      if (currentUserId !== userId)
-        throw new ForbiddenException('Access denied');
+  async getUserInfo(@Req() req: IRequestWithUser, @Param('id') userId: string) {
+    const currentUserId = req.user.sub;
+    if (currentUserId !== userId) throw new ForbiddenException('Access denied');
 
-      const user = await firstValueFrom(this.userService.getUserInfo(userId));
-      return user;
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
+    const user = await firstValueFrom(this.userService.getUserInfo(userId));
+    return user;
+  }
+
+  @UseGuards(AuthGuard)
+  @Post(':id/send-verify-email')
+  async sendVerifyEmail(
+    @Req() req: IRequestWithUser,
+    @Param('id') userId: string,
+    @Body() body: { email: string },
+  ) {
+    const currentUserId = req.user.sub;
+    if (currentUserId !== userId) throw new ForbiddenException('Access denied');
+
+    return await firstValueFrom(
+      this.userService.sendVerifyEmail(userId, body.email),
+    );
+  }
+
+  @Post('/verify-email')
+  async verifyEmail(@Body() body: { token: string }) {
+    return await firstValueFrom(this.userService.verifyEmail(body.token));
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch(':id')
+  async updateUserInfo(
+    @Req() req: IRequestWithUser,
+    @Param('id') userId: string,
+    @Body() updateData: UpdateUserDTO,
+  ) {
+    const currentUserId = req.user.sub;
+    if (currentUserId !== userId) throw new ForbiddenException('Access denied');
+
+    const user = await firstValueFrom(
+      this.userService.updateUserInfo(userId, updateData),
+    );
+    return user;
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch(':id/update-password')
+  async updatePassword(
+    @Req() req: IRequestWithUser,
+    @Param('id') userId: string,
+    @Body() updateData: UpdatePasswordDto,
+  ) {
+    const currentUserId = req.user.sub;
+    if (currentUserId !== userId) throw new ForbiddenException('Access denied');
+
+    const result = await firstValueFrom(
+      this.userService.updatePassword(userId, updateData),
+    );
+    return result;
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch(':id/upload-image')
+  @UseInterceptors(FileInterceptor('file'))
+  async updateUserImage(
+    @Req() req: IRequestWithUser,
+    @Param('id') userId: string,
+    @Query('type') type: 'avatar' | 'cover',
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: 'image/jpeg' })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const currentUserId = req.user.sub;
+    if (currentUserId !== userId) throw new ForbiddenException('Access denied');
+
+    const uploadResult = await firstValueFrom(
+      this.mediaService.uploadMedia(file, 'user-' + type),
+    );
+
+    const user = await firstValueFrom(
+      this.userService.updateUserInfo(userId, {
+        [type + 'Url']: uploadResult.url,
+      }),
+    );
+
+    return user;
   }
 }

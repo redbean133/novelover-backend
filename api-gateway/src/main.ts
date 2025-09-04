@@ -3,6 +3,7 @@ import { ApiGatewayModule } from './apiGateway.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { RpcToHttpExceptionFilter } from './common/filter/RpcToHttpExceptionFilter';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiGatewayModule);
@@ -24,6 +25,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  app.useGlobalFilters(new RpcToHttpExceptionFilter());
 
   await app.listen(runningPort);
 
