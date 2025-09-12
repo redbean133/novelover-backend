@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   FileTypeValidator,
   ForbiddenException,
   Get,
@@ -29,8 +30,10 @@ import { UpdateUserDTO } from './dto/updateUser.dto';
 import { FileInterceptor } from '@nestjs/platform-express/multer';
 import { MediaService } from '../media/media.service';
 import { UpdatePasswordDto } from './dto/updatePassword.dto';
+import { OptionalAuthGuard } from 'src/common/guard/optionalAuth.guard';
+import { CurrentUserId } from 'src/common/decorator/currentUserId.decorator';
 
-@Controller('/user')
+@Controller('/users')
 export class UserController {
   constructor(
     private readonly userService: UserService,
@@ -60,7 +63,7 @@ export class UserController {
     res.cookie('refresh-token', refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 7 * 24 * 3600 * 1000,
       path: '/user/refresh-token',
     });
@@ -68,7 +71,7 @@ export class UserController {
     res.cookie('device-id', deviceId, {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 365 * 24 * 3600 * 1000,
       path: '/user/refresh-token',
     });
@@ -94,7 +97,7 @@ export class UserController {
     res.cookie('refresh-token', refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 7 * 24 * 3600 * 1000,
       path: '/user/refresh-token',
     });
@@ -102,7 +105,7 @@ export class UserController {
     res.cookie('device-id', deviceId, {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 365 * 24 * 3600 * 1000,
       path: '/user/refresh-token',
     });
@@ -148,7 +151,7 @@ export class UserController {
     res.cookie('refresh-token', refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 7 * 24 * 3600 * 1000,
       path: '/user/refresh-token',
     });
@@ -260,7 +263,7 @@ export class UserController {
     @Query('type') type: 'avatar' | 'cover',
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new FileTypeValidator({ fileType: 'image/jpeg' })],
+        validators: [new FileTypeValidator({ fileType: /^image\// })],
       }),
     )
     file: Express.Multer.File,
@@ -279,5 +282,44 @@ export class UserController {
     );
 
     return user;
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('follow')
+  follow(@Req() req: IRequestWithUser, @Body('targetId') targetId: string) {
+    return this.userService.follow(req.user.sub, targetId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('follow')
+  unfollow(@Req() req: IRequestWithUser, @Query('targetId') targetId: string) {
+    return this.userService.unfollow(req.user.sub, targetId);
+  }
+
+  @UseGuards(OptionalAuthGuard)
+  @Get(':userId/followers')
+  getFollowers(
+    @Param('userId') userId: string,
+    @CurrentUserId() currentUserId: string | null,
+  ) {
+    return this.userService.getFollowers(userId, currentUserId);
+  }
+
+  @UseGuards(OptionalAuthGuard)
+  @Get(':userId/following')
+  getFollowing(
+    @Param('userId') userId: string,
+    @CurrentUserId() currentUserId: string | null,
+  ) {
+    return this.userService.getFollowing(userId, currentUserId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get(':targetId/follow/status')
+  isFollowing(
+    @Req() req: IRequestWithUser,
+    @Param('targetId') targetId: string,
+  ) {
+    return this.userService.isFollowing(req.user.sub, targetId);
   }
 }

@@ -1,12 +1,8 @@
 import { Module } from '@nestjs/common';
-import { NovelController } from './novel.controller';
-import { NovelService } from './novel.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-  controllers: [NovelController],
-  providers: [NovelService],
   imports: [
     ClientsModule.registerAsync([
       {
@@ -23,5 +19,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       },
     ]),
   ],
+  exports: [ClientsModule],
 })
-export class NovelModule {}
+export class SharedModule {}
