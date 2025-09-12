@@ -14,7 +14,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: ['http://localhost:5173'], // FE domain
+    origin: ['http://192.168.28.149:5173'], // FE domain
     credentials: true,
   });
 

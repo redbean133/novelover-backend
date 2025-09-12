@@ -19,6 +19,11 @@ export class UserController {
     return this.userService.getInformation(userId);
   }
 
+  @MessagePattern({ cmd: 'user.get-public-information' })
+  async getPublicInformation(@Payload() profileId: string): Promise<any> {
+    return this.userService.getPublicInformation(profileId);
+  }
+
   @MessagePattern({ cmd: 'user.verify-email' })
   async verifyEmail(@Payload() token: string): Promise<any> {
     return this.userService.verifyEmail(token);
@@ -59,5 +64,10 @@ export class UserController {
       currentPassword,
       newPassword,
     );
+  }
+
+  @MessagePattern({ cmd: 'user.get-by-ids' })
+  async getUsersByIds(ids: string[]) {
+    return this.userService.getUsersByIds(ids);
   }
 }

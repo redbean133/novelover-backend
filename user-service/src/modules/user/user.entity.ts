@@ -5,7 +5,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { Follow } from '../follow/follow.entity';
 
 export const Gender = {
   Unknown: 0,
@@ -100,6 +102,12 @@ export class User {
     comment: '0: normal, 1: self-lock, 2: admin lock',
   })
   status: AccountStatus;
+
+  @OneToMany(() => Follow, (follow) => follow.follower)
+  following: Follow[];
+
+  @OneToMany(() => Follow, (follow) => follow.following)
+  followers: Follow[];
 
   @CreateDateColumn({
     type: 'timestamp',

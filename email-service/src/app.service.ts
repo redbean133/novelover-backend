@@ -7,7 +7,7 @@ export class AppService {
   constructor(private readonly mailer: MailerService) {}
 
   async sendVerificationEmail(data: { email: string; token: string }) {
-    const url = `http://${process.env.CLIENT_HOST}:${process.env.CLIENT_PORT}/email-verify?token=${data.token}`;
+    const url = `http://192.168.28.149:5173/email-verify?token=${data.token}`;
     try {
       await this.mailer.sendMail({
         to: data.email,

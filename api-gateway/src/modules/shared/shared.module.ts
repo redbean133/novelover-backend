@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
+    JwtModule.register({}),
     ClientsModule.registerAsync([
       {
         name: 'USER_SERVICE',
@@ -64,6 +66,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       },
     ]),
   ],
-  exports: [ClientsModule],
+  exports: [ClientsModule, JwtModule],
 })
 export class SharedModule {}

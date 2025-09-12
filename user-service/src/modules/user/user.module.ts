@@ -6,10 +6,11 @@ import { UserController } from './user.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Follow } from '../follow/follow.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Follow]),
     JwtModule.register({}),
     ClientsModule.registerAsync([
       {

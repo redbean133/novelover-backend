@@ -83,4 +83,46 @@ export class UserService {
       { userId, ...updateData },
     );
   }
+
+  follow(userId: string, targetId: string): Observable<any> {
+    return this.userServiceClient.send(
+      { cmd: 'user.follow' },
+      { userId, targetId },
+    );
+  }
+
+  unfollow(userId: string, targetId: string): Observable<any> {
+    return this.userServiceClient.send(
+      { cmd: 'user.unfollow' },
+      { userId, targetId },
+    );
+  }
+
+  getFollowers(userId: string, currentUserId: string | null): Observable<any> {
+    return this.userServiceClient.send(
+      { cmd: 'user.get-followers' },
+      { userId, currentUserId },
+    );
+  }
+
+  getFollowing(userId: string, currentUserId: string | null): Observable<any> {
+    return this.userServiceClient.send(
+      { cmd: 'user.get-following' },
+      { userId, currentUserId },
+    );
+  }
+
+  isFollowing(userId: string, targetId: string): Observable<any> {
+    return this.userServiceClient.send(
+      { cmd: 'user.is-following' },
+      { userId, targetId },
+    );
+  }
+
+  getUsersByIds(ids: string[]) {
+    return this.userServiceClient.send<{ id: string; displayName: string }[]>(
+      { cmd: 'user.get-by-ids' },
+      ids,
+    );
+  }
 }

@@ -1,6 +1,6 @@
 import { Injectable, Inject, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/createUser.dto';
@@ -10,12 +10,15 @@ import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { omit } from 'lodash';
 import { IAccessTokenPayload } from 'src/common/interface/IAccessTokenPayload';
 import { UpdateUserDTO } from './dto/updateUser.dto';
+import { Follow } from '../follow/follow.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Follow)
+    private readonly followRepository: Repository<Follow>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     @Inject('EMAIL_SERVICE') private readonly emailServiceClient: ClientProxy,
@@ -57,6 +60,34 @@ export class UserService {
 
     const userWithoutPassword = omit(user, ['passwordDigest']);
     return userWithoutPassword;
+  }
+
+  async getPublicInformation(userId: string): Promise<any> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user)
+      throw new RpcException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'Không tìm thấy tài khoản người dùng',
+      });
+
+    const [followersCount, followingCount] = await Promise.all([
+      this.followRepository.count({ where: { following: { id: userId } } }),
+      this.followRepository.count({ where: { follower: { id: userId } } }),
+    ]);
+
+    return {
+      id: user.id,
+      username: user.username,
+      displayName: user.displayName,
+      birthday: user.birthday,
+      gender: user.gender,
+      about: user.about,
+      avatarUrl: user.avatarUrl,
+      coverUrl: user.coverUrl,
+      createdAt: user.createdAt,
+      followersCount,
+      followingCount,
+    };
   }
 
   async sendVerifyEmail(userId: string, email: string): Promise<any> {
@@ -160,5 +191,19 @@ export class UserService {
     user.passwordDigest = await bcrypt.hash(newPassword, 10);
     const updatedUser = await this.userRepository.save(user);
     if (updatedUser) return { success: true };
+  }
+
+  async getUsersByIds(
+    ids: string[],
+  ): Promise<{ id: string; displayName: string }[]> {
+    if (!ids.length) return [];
+    const users = await this.userRepository.find({
+      where: { id: In(ids) },
+      select: ['id', 'displayName'],
+    });
+    return users.map((user) => ({
+      id: user.id,
+      displayName: user.displayName,
+    }));
   }
 }
