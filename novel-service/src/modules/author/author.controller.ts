@@ -2,36 +2,23 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthorService } from './author.service';
 import { CreateAuthorDto } from './dto/createAuthor.dto';
-import { UpdateAuthorDto } from './dto/updateAuthor.dto';
 
 @Controller()
 export class AuthorController {
   constructor(private readonly authorService: AuthorService) {}
 
-  @MessagePattern({ cmd: 'author.create' })
-  create(@Payload() dto: CreateAuthorDto) {
-    return this.authorService.create(dto);
+  @MessagePattern({ cmd: 'author.get-by-id' })
+  getById(@Payload() payload: { id: number }) {
+    return this.authorService.getById(payload.id);
   }
 
-  @MessagePattern({ cmd: 'author.find-all' })
-  findAll(
-    @Payload() query?: { page?: number; limit?: number; search?: string },
-  ) {
-    return this.authorService.findAll(query);
+  @MessagePattern({ cmd: 'author.create-if-not-exists' })
+  createIfNotExists(@Payload() payload: CreateAuthorDto) {
+    return this.authorService.createIfNotExists(payload);
   }
 
-  @MessagePattern({ cmd: 'author.find-one' })
-  findOne(@Payload() payload: { id: number }) {
-    return this.authorService.findOne(payload.id);
-  }
-
-  @MessagePattern({ cmd: 'author.update' })
-  update(@Payload() payload: { id: number; data: UpdateAuthorDto }) {
-    return this.authorService.update(payload.id, payload.data);
-  }
-
-  @MessagePattern({ cmd: 'author.delete' })
-  delete(@Payload() payload: { id: number }) {
-    return this.authorService.delete(payload.id);
+  @MessagePattern({ cmd: 'author.get-suggestions' })
+  getSuggestions(@Payload() payload: { name: string; limit?: number }) {
+    return this.authorService.getSuggestions(payload.name, payload.limit);
   }
 }

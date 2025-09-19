@@ -43,4 +43,19 @@ export class NovelController {
   findOne(@Payload() payload: { id: number; isPublishedOnly?: boolean }) {
     return this.novelService.findOne(payload);
   }
+
+  @MessagePattern({ cmd: 'novel.find-all-by-contributor' })
+  findAllByContributor(payload: {
+    contributorId: string;
+    status: 'published' | 'draft' | 'all';
+    page: number;
+    limit: number;
+  }) {
+    return this.novelService.findAll(payload);
+  }
+
+  @MessagePattern({ cmd: 'novel.get-detail-by-contributor' })
+  getDetailByContributor(payload: { contributorId: string; novelId: number }) {
+    return this.novelService.getDetailByContributor(payload);
+  }
 }

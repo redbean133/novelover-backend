@@ -5,6 +5,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { NovelModule } from './modules/novel/novel.module';
 import { AuthorModule } from './modules/author/author.module';
 import { GenreModule } from './modules/genre/genre.module';
+import { ChapterModule } from './modules/chapter/chapter.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { GenreModule } from './modules/genre/genre.module';
     NovelModule,
     AuthorModule,
     GenreModule,
+    ChapterModule,
   ],
 })
 export class ApiGatewayModule {}

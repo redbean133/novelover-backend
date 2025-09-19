@@ -13,16 +13,14 @@ export class GenreController {
     return this.genreService.create(dto);
   }
 
-  @MessagePattern({ cmd: 'genre.find-all' })
-  findAll(
-    @Payload() query?: { page?: number; limit?: number; search?: string },
-  ) {
-    return this.genreService.findAll(query);
+  @MessagePattern({ cmd: 'genre.get-all' })
+  getAll() {
+    return this.genreService.getAll();
   }
 
-  @MessagePattern({ cmd: 'genre.find-one' })
-  findOne(@Payload() id: number) {
-    return this.genreService.findOne(id);
+  @MessagePattern({ cmd: 'genre.get-one-by-id' })
+  getOneById(@Payload() id: number) {
+    return this.genreService.getOneById(id);
   }
 
   @MessagePattern({ cmd: 'genre.update' })

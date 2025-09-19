@@ -107,4 +107,23 @@ export class NovelService {
       contributorName: contributor[0]?.displayName ?? '',
     };
   }
+
+  findAllByContributor(payload: {
+    contributorId: string;
+    status: 'published' | 'draft' | 'all';
+    page: number;
+    limit: number;
+  }) {
+    return this.novelClient.send(
+      { cmd: 'novel.find-all-by-contributor' },
+      payload,
+    );
+  }
+
+  getDetailByContributor(payload: { contributorId: string; novelId: number }) {
+    return this.novelClient.send(
+      { cmd: 'novel.get-detail-by-contributor' },
+      payload,
+    );
+  }
 }

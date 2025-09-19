@@ -5,7 +5,6 @@ import {
   IsOptional,
   IsString,
   MaxLength,
-  IsUrl,
   IsArray,
   ArrayMinSize,
   ArrayMaxSize,
@@ -14,15 +13,16 @@ import {
 export class CreateNovelDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
+  @MaxLength(128)
   title: string;
 
   @IsBoolean()
   isOriginal: boolean;
 
   @IsOptional()
-  @IsInt()
-  authorId?: number;
+  @IsString()
+  @MaxLength(64)
+  authorName?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -31,10 +31,6 @@ export class CreateNovelDto {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @IsOptional()
-  @IsUrl()
-  coverUrl?: string;
 
   @IsArray()
   @ArrayMinSize(1, { message: 'Tiểu thuyết phải thuộc ít nhất 1 thể loại' })

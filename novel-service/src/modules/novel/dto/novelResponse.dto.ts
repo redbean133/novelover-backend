@@ -49,6 +49,7 @@ export class NovelResponseDto {
   numberOfViews: number;
 
   @Expose()
+  @Transform(({ value }): string => value ?? '')
   description: string;
 
   @Expose()
@@ -60,6 +61,9 @@ export class NovelResponseDto {
   @Expose()
   @Transform(({ value }): Date | string => value ?? '')
   publishedAt: Date | null;
+
+  @Expose()
+  isCompleted: boolean;
 
   @Expose()
   @Transform(({ value }): Date | string => value ?? '')
