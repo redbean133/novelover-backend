@@ -30,7 +30,7 @@ export class Novel {
   isOriginal: boolean;
 
   @ManyToOne(() => Author, (author) => author.novels, { nullable: true })
-  author?: Author;
+  author?: Author | null;
 
   @Column()
   contributorId: string;
@@ -60,13 +60,16 @@ export class Novel {
   isPublished: boolean;
 
   @Column({ type: 'timestamp', nullable: true })
-  publishedAt: Date;
+  publishedAt: Date | null;
 
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ default: false })
+  isCompleted: boolean;
+
   @Column({ type: 'timestamp', nullable: true })
-  completedAt?: Date;
+  completedAt?: Date | null;
 
   @UpdateDateColumn()
   lastUpdatedAt: Date;

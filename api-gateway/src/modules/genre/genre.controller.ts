@@ -7,7 +7,6 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { GenreService } from './genre.service';
@@ -39,12 +38,12 @@ export class GenreController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.genreService.findOne(id);
+  getOneById(@Param('id', ParseIntPipe) id: number) {
+    return this.genreService.getOneById(id);
   }
 
   @Get()
-  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
-    return this.genreService.findAll({ page, limit });
+  getAll() {
+    return this.genreService.getAll();
   }
 }

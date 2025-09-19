@@ -1,30 +1,28 @@
-import { Novel } from 'src/modules/novel/novel.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  Unique,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Novel } from '../novel/novel.entity';
 
 @Entity()
-@Unique(['novel', 'number'])
 export class Chapter {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  number: number;
+  novelId: number;
 
   @ManyToOne(() => Novel, (novel) => novel.chapters, { onDelete: 'CASCADE' })
   novel: Novel;
 
-  @Column({ length: 255 })
+  @Column({ default: '' })
   title: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', default: '' })
   content: string;
 
   @Column({ default: 0 })
@@ -36,9 +34,15 @@ export class Chapter {
   @Column({ default: 0 })
   numberOfVotes: number;
 
+  @Column({ default: false })
+  isPublished: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  publishedAt: Date | null;
+
   @CreateDateColumn()
-  publishedAt: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  lastUpdatedAt: Date;
+  updatedAt: Date;
 }

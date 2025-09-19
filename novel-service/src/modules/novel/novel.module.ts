@@ -16,6 +16,6 @@ import { GenreModule } from '../genre/genre.module';
     AuthorModule,
     GenreModule,
   ],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, NovelService],
 })
 export class NovelModule {}

@@ -21,11 +21,11 @@ export class GenreService {
     return this.novelClient.send({ cmd: 'genre.delete' }, id);
   }
 
-  findOne(id: number) {
-    return this.novelClient.send({ cmd: 'genre.find-one' }, id);
+  getOneById(id: number) {
+    return this.novelClient.send({ cmd: 'genre.get-one-by-id' }, id);
   }
 
-  findAll(query: { page?: number; limit?: number }) {
-    return this.novelClient.send({ cmd: 'genre.find-all' }, query);
+  getAll() {
+    return this.novelClient.send({ cmd: 'genre.get-all' }, {});
   }
 }

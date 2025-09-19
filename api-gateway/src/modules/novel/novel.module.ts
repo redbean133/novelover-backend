@@ -4,10 +4,11 @@ import { NovelController } from './novel.controller';
 import { NovelService } from './novel.service';
 import { MediaModule } from '../media/media.module';
 import { UserModule } from '../user/user.module';
+import { MyNovelController } from './myNovel.controller';
 
 @Module({
   imports: [SharedModule, MediaModule, UserModule],
-  controllers: [NovelController],
+  controllers: [NovelController, MyNovelController],
   providers: [NovelService],
 })
 export class NovelModule {}

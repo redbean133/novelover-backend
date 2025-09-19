@@ -5,6 +5,7 @@ import { NovelModule } from './modules/novel/novel.module';
 import databaseConfig from './config/database.config';
 import { AuthorModule } from './modules/author/author.module';
 import { GenreModule } from './modules/genre/genre.module';
+import { ChapterModule } from './modules/chapter/chapter.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,6 +21,7 @@ import { GenreModule } from './modules/genre/genre.module';
     NovelModule,
     AuthorModule,
     GenreModule,
+    ChapterModule,
   ],
 })
 export class AppModule {}

@@ -1,11 +1,15 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { RpcException } from '@nestjs/microservices';
 import { Genre } from './genre.entity';
 import { CreateGenreDto } from './dto/createGenre.dto';
 import { UpdateGenreDto } from './dto/updateGenre.dto';
-import { defaultPageNumber, defaultPageSize } from 'src/utils/constants';
+import { plainToInstance } from 'class-transformer';
+import {
+  GenreResponseDto,
+  GenreWithoutDescriptionResponseDto,
+} from './dto/genreResponse.dto';
 
 @Injectable()
 export class GenreService {
@@ -14,7 +18,7 @@ export class GenreService {
     private genreRepo: Repository<Genre>,
   ) {}
 
-  async create(dto: CreateGenreDto): Promise<Genre> {
+  async create(dto: CreateGenreDto): Promise<GenreResponseDto> {
     const exists = await this.genreRepo.findOne({ where: { name: dto.name } });
     if (exists) {
       throw new RpcException({
@@ -24,33 +28,20 @@ export class GenreService {
     }
 
     const genre = this.genreRepo.create(dto);
-    return this.genreRepo.save(genre);
+    await this.genreRepo.save(genre);
+    return plainToInstance(GenreResponseDto, genre, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  async findAll(query?: { page?: number; limit?: number; search?: string }) {
-    const page = query?.page ? +query.page : defaultPageNumber;
-    const limit = query?.limit ? +query.limit : defaultPageSize;
-    const queryBuilder = this.genreRepo.createQueryBuilder('genre');
-
-    if (query?.search) {
-      const s = `%${query.search}%`;
-      queryBuilder.where('genre.name LIKE :s', {
-        s,
-      });
-    }
-
-    const total = await queryBuilder.getCount();
-
-    const data = await queryBuilder
-      .orderBy('genre.name', 'ASC')
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getMany();
-
-    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  async getAll() {
+    const genres = await this.genreRepo.find();
+    return plainToInstance(GenreWithoutDescriptionResponseDto, genres, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  async findOne(id: number): Promise<Genre> {
+  async getOneById(id: number): Promise<GenreResponseDto> {
     const genre = await this.genreRepo.findOne({ where: { id } });
     if (!genre) {
       throw new RpcException({
@@ -58,11 +49,19 @@ export class GenreService {
         message: `Thể loại truyện với id ${id} không tồn tại`,
       });
     }
-    return genre;
+    return plainToInstance(GenreResponseDto, genre, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  async update(id: number, dto: UpdateGenreDto): Promise<Genre> {
-    const genre = await this.findOne(id);
+  async getByIds(ids: number[]): Promise<Genre[]> {
+    return this.genreRepo.findBy({
+      id: In(ids),
+    });
+  }
+
+  async update(id: number, dto: UpdateGenreDto): Promise<GenreResponseDto> {
+    const genre = await this.getOneById(id);
     const exists = await this.genreRepo.findOne({ where: { name: dto.name } });
     if (exists && exists.id !== id) {
       throw new RpcException({
@@ -72,11 +71,19 @@ export class GenreService {
     }
 
     Object.assign(genre, dto);
-    return this.genreRepo.save(genre);
+    return plainToInstance(GenreResponseDto, await this.genreRepo.save(genre), {
+      excludeExtraneousValues: true,
+    });
   }
 
   async delete(id: number): Promise<{ success: boolean }> {
-    const genre = await this.findOne(id);
+    const genre = await this.genreRepo.findOne({ where: { id } });
+    if (!genre) {
+      throw new RpcException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `Không tìm thấy thể loại truyện cần xóa`,
+      });
+    }
     await this.genreRepo.remove(genre);
     return { success: true };
   }

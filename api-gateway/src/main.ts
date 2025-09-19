@@ -14,7 +14,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: ['http://192.168.28.149:5173'], // FE domain
+    origin: ['http://192.168.12.149:5173', 'http://192.168.12.149:4173'], // FE domain
     credentials: true,
   });
 
