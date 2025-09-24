@@ -16,53 +16,39 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express/multer';
 import { ParseFilePipe, FileTypeValidator } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
-import { NovelService } from './novel.service';
 import { CreateNovelDto } from './dto/createNovel.dto';
 import { UpdateNovelDto } from './dto/updateNovel.dto';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import type { IRequestWithUser } from 'src/common/interface/IRequestWithUser';
 import { MediaService } from '../media/media.service';
+import { MyNovelService } from './myNovel.service';
+import { PublishNovelDto } from './dto/publishNovel.dto';
+import { CompleteNovelDto } from './dto/completeNovel.dto';
 
 @Controller('/my-novels')
 export class MyNovelController {
   constructor(
-    private readonly novelService: NovelService,
+    private readonly myNovelService: MyNovelService,
     private readonly mediaService: MediaService,
   ) {}
 
   @UseGuards(AuthGuard)
   @Post()
-  createNovel(@Req() req: IRequestWithUser, @Body() dto: CreateNovelDto) {
-    return this.novelService.createNovel({
+  create(@Req() req: IRequestWithUser, @Body() dto: CreateNovelDto) {
+    return this.myNovelService.create({
       ...dto,
       contributorId: req.user.sub,
     });
   }
 
   @UseGuards(AuthGuard)
-  @Get()
-  getMyNovels(
-    @Req() req: IRequestWithUser,
-    @Query('status') status: 'published' | 'draft' | 'all' = 'published',
-    @Query('page') page = 1,
-    @Query('limit') limit = 12,
-  ) {
-    return this.novelService.findAllByContributor({
-      contributorId: req.user.sub,
-      status,
-      page,
-      limit,
-    });
-  }
-
-  @UseGuards(AuthGuard)
   @Patch(':id')
-  updateNovel(
+  update(
     @Req() req: IRequestWithUser,
     @Param('id', ParseIntPipe) novelId: number,
     @Body() dto: UpdateNovelDto,
   ) {
-    return this.novelService.updateNovel({
+    return this.myNovelService.update({
       id: novelId,
       currentUserId: req.user.sub,
       data: dto,
@@ -70,26 +56,42 @@ export class MyNovelController {
   }
 
   @UseGuards(AuthGuard)
-  @Delete(':id')
-  deleteNovel(
+  @Patch(':id/publish')
+  publish(
     @Req() req: IRequestWithUser,
     @Param('id', ParseIntPipe) novelId: number,
+    @Body() dto: PublishNovelDto,
   ) {
-    return this.novelService.deleteNovel({
+    return this.myNovelService.publish({
       id: novelId,
       currentUserId: req.user.sub,
+      ...dto,
     });
   }
 
   @UseGuards(AuthGuard)
-  @Get(':id')
-  getMyNovelDetail(
+  @Patch(':id/complete')
+  complete(
+    @Req() req: IRequestWithUser,
+    @Param('id', ParseIntPipe) novelId: number,
+    @Body() dto: CompleteNovelDto,
+  ) {
+    return this.myNovelService.complete({
+      id: novelId,
+      currentUserId: req.user.sub,
+      ...dto,
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete(':id')
+  delete(
     @Req() req: IRequestWithUser,
     @Param('id', ParseIntPipe) novelId: number,
   ) {
-    return this.novelService.getDetailByContributor({
-      contributorId: req.user.sub,
-      novelId,
+    return this.myNovelService.delete({
+      id: novelId,
+      currentUserId: req.user.sub,
     });
   }
 
@@ -110,10 +112,38 @@ export class MyNovelController {
       this.mediaService.uploadMedia(file, 'novel-cover'),
     );
 
-    return this.novelService.updateNovel({
+    return this.myNovelService.update({
       id: novelId,
       currentUserId: req.user.sub,
       data: { coverUrl: uploadResult.url },
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get()
+  findAll(
+    @Req() req: IRequestWithUser,
+    @Query('status') status: 'published' | 'draft' = 'published',
+    @Query('page') page = 1,
+    @Query('limit') limit = 12,
+  ) {
+    return this.myNovelService.findAll({
+      contributorId: req.user.sub,
+      status,
+      page,
+      limit,
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get(':id')
+  findOne(
+    @Req() req: IRequestWithUser,
+    @Param('id', ParseIntPipe) novelId: number,
+  ) {
+    return this.myNovelService.findOne({
+      contributorId: req.user.sub,
+      novelId,
     });
   }
 }

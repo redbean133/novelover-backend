@@ -7,9 +7,9 @@ import { CreateAuthorDto } from './dto/createAuthor.dto';
 export class AuthorController {
   constructor(private readonly authorService: AuthorService) {}
 
-  @MessagePattern({ cmd: 'author.get-by-id' })
-  getById(@Payload() payload: { id: number }) {
-    return this.authorService.getById(payload.id);
+  @MessagePattern({ cmd: 'author.find-one' })
+  findOne(@Payload() payload: { id: number }) {
+    return this.authorService.findOne(payload.id);
   }
 
   @MessagePattern({ cmd: 'author.create-if-not-exists' })

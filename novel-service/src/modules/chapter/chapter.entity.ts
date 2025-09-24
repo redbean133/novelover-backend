@@ -40,6 +40,15 @@ export class Chapter {
   @Column({ type: 'timestamp', nullable: true })
   publishedAt: Date | null;
 
+  @Column({ type: 'bigint', nullable: false })
+  orderIndex: number;
+
+  @Column({ type: 'int', nullable: true })
+  prevChapterId: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  nextChapterId: number | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

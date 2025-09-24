@@ -4,11 +4,13 @@ import { Chapter } from './chapter.entity';
 import { ChapterService } from './chapter.service';
 import { ChapterController } from './chapter.controller';
 import { NovelModule } from '../novel/novel.module';
+import { MyChapterController } from './myChapter.controller';
+import { MyChapterService } from './myChapter.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Chapter]), NovelModule],
-  providers: [ChapterService],
-  controllers: [ChapterController],
-  exports: [ChapterService],
+  providers: [ChapterService, MyChapterService],
+  controllers: [ChapterController, MyChapterController],
+  exports: [ChapterService, MyChapterService],
 })
 export class ChapterModule {}

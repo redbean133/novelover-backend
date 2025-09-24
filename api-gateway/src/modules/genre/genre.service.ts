@@ -9,23 +9,23 @@ export class GenreService {
     @Inject('NOVEL_SERVICE') private readonly novelClient: ClientProxy,
   ) {}
 
-  createGenre(data: CreateGenreDto) {
+  create(data: CreateGenreDto) {
     return this.novelClient.send({ cmd: 'genre.create' }, data);
   }
 
-  updateGenre(payload: { id: number; data: UpdateGenreDto }) {
+  update(payload: { id: number; data: UpdateGenreDto }) {
     return this.novelClient.send({ cmd: 'genre.update' }, payload);
   }
 
-  deleteGenre(id: number) {
+  delete(id: number) {
     return this.novelClient.send({ cmd: 'genre.delete' }, id);
   }
 
-  getOneById(id: number) {
-    return this.novelClient.send({ cmd: 'genre.get-one-by-id' }, id);
+  findOne(id: number) {
+    return this.novelClient.send({ cmd: 'genre.find-one' }, id);
   }
 
-  getAll() {
-    return this.novelClient.send({ cmd: 'genre.get-all' }, {});
+  findAll() {
+    return this.novelClient.send({ cmd: 'genre.find-all' }, {});
   }
 }
