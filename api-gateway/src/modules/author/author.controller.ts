@@ -12,7 +12,7 @@ export class AuthorController {
   }
 
   @Get(':id')
-  getById(@Param('id', ParseIntPipe) id: number) {
-    return firstValueFrom(this.authorService.getById(id));
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return firstValueFrom(this.authorService.findOne(id));
   }
 }

@@ -34,34 +34,8 @@ export class GenreService {
     });
   }
 
-  async getAll() {
-    const genres = await this.genreRepo.find();
-    return plainToInstance(GenreWithoutDescriptionResponseDto, genres, {
-      excludeExtraneousValues: true,
-    });
-  }
-
-  async getOneById(id: number): Promise<GenreResponseDto> {
-    const genre = await this.genreRepo.findOne({ where: { id } });
-    if (!genre) {
-      throw new RpcException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: `Thể loại truyện với id ${id} không tồn tại`,
-      });
-    }
-    return plainToInstance(GenreResponseDto, genre, {
-      excludeExtraneousValues: true,
-    });
-  }
-
-  async getByIds(ids: number[]): Promise<Genre[]> {
-    return this.genreRepo.findBy({
-      id: In(ids),
-    });
-  }
-
   async update(id: number, dto: UpdateGenreDto): Promise<GenreResponseDto> {
-    const genre = await this.getOneById(id);
+    const genre = await this.findOne(id);
     const exists = await this.genreRepo.findOne({ where: { name: dto.name } });
     if (exists && exists.id !== id) {
       throw new RpcException({
@@ -86,5 +60,31 @@ export class GenreService {
     }
     await this.genreRepo.remove(genre);
     return { success: true };
+  }
+
+  async findAll() {
+    const genres = await this.genreRepo.find();
+    return plainToInstance(GenreWithoutDescriptionResponseDto, genres, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async findOne(id: number): Promise<GenreResponseDto> {
+    const genre = await this.genreRepo.findOne({ where: { id } });
+    if (!genre) {
+      throw new RpcException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: `Thể loại truyện với id ${id} không tồn tại`,
+      });
+    }
+    return plainToInstance(GenreResponseDto, genre, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async getByIds(ids: number[]): Promise<Genre[]> {
+    return this.genreRepo.findBy({
+      id: In(ids),
+    });
   }
 }

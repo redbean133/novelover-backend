@@ -8,8 +8,8 @@ export class AuthorService {
     @Inject('NOVEL_SERVICE') private readonly novelClientProxy: ClientProxy,
   ) {}
 
-  getById(id: number): Observable<any> {
-    return this.novelClientProxy.send({ cmd: 'author.get-by-id' }, { id });
+  findOne(id: number): Observable<any> {
+    return this.novelClientProxy.send({ cmd: 'author.find-one' }, { id });
   }
 
   getSuggestions(name: string): Observable<any> {

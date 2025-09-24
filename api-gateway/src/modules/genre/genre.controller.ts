@@ -22,28 +22,28 @@ export class GenreController {
   @UseGuards(AuthGuard, AdminGuard)
   @Post()
   create(@Body() dto: CreateGenreDto) {
-    return this.genreService.createGenre(dto);
+    return this.genreService.create(dto);
   }
 
   @UseGuards(AuthGuard, AdminGuard)
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateGenreDto) {
-    return this.genreService.updateGenre({ id, data: dto });
+    return this.genreService.update({ id, data: dto });
   }
 
   @UseGuards(AuthGuard, AdminGuard)
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
-    return this.genreService.deleteGenre(id);
+    return this.genreService.delete(id);
   }
 
   @Get(':id')
-  getOneById(@Param('id', ParseIntPipe) id: number) {
-    return this.genreService.getOneById(id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.genreService.findOne(id);
   }
 
   @Get()
-  getAll() {
-    return this.genreService.getAll();
+  findAll() {
+    return this.genreService.findAll();
   }
 }

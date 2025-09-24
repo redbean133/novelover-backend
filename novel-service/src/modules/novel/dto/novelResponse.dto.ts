@@ -16,7 +16,41 @@ export class GenreDto {
   name: string;
 }
 
-export class NovelResponseDto {
+export class MyNovelInListResponseDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  title: string;
+
+  @Expose()
+  @Transform(({ value }): string => value ?? '')
+  coverUrl: string | null;
+
+  @Expose()
+  isOriginal: boolean;
+
+  @Expose()
+  numberOfPublishedChapters: number;
+
+  @Expose()
+  numberOfChapters: number;
+
+  @Expose()
+  numberOfViews: number;
+
+  @Expose()
+  @Type(() => AuthorDto)
+  author: AuthorDto;
+
+  @Expose()
+  isCompleted: boolean;
+
+  @Expose()
+  averageRating: number;
+}
+
+export class PublicNovelInListResponseDto {
   @Expose()
   id: number;
 
@@ -34,11 +68,28 @@ export class NovelResponseDto {
   contributorId: string;
 
   @Expose()
-  numberOfChapters: number;
-
-  @Expose()
   numberOfPublishedChapters: number;
 
+  @Expose()
+  @Transform(({ value }): string => value ?? '')
+  description: string;
+
+  @Expose()
+  numberOfViews: number;
+
+  @Expose()
+  @Type(() => AuthorDto)
+  author: AuthorDto;
+
+  @Expose()
+  @Type(() => GenreDto)
+  genres: GenreDto[];
+
+  @Expose()
+  isCompleted: boolean;
+}
+
+export class PublicNovelResponseDto extends PublicNovelInListResponseDto {
   @Expose()
   numberOfReviews: number;
 
@@ -46,28 +97,23 @@ export class NovelResponseDto {
   numberOfVotes: number;
 
   @Expose()
-  numberOfViews: number;
-
-  @Expose()
-  @Transform(({ value }): string => value ?? '')
-  description: string;
-
-  @Expose()
   averageRating: number;
-
-  @Expose()
-  isPublished: boolean;
 
   @Expose()
   @Transform(({ value }): Date | string => value ?? '')
   publishedAt: Date | null;
 
   @Expose()
-  isCompleted: boolean;
-
-  @Expose()
   @Transform(({ value }): Date | string => value ?? '')
   completedAt: Date | null;
+}
+
+export class FullInfoNovelResponseDto extends PublicNovelResponseDto {
+  @Expose()
+  isPublished: boolean;
+
+  @Expose()
+  numberOfChapters: number;
 
   @Expose()
   createdAt: Date;
@@ -78,12 +124,4 @@ export class NovelResponseDto {
   @Expose()
   @Transform(({ value }): Date | string => value ?? '')
   deletedAt: Date | null;
-
-  @Expose()
-  @Type(() => AuthorDto)
-  author: AuthorDto;
-
-  @Expose()
-  @Type(() => GenreDto)
-  genres: GenreDto[];
 }

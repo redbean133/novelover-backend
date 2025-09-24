@@ -1,12 +1,14 @@
 import { Expose, Transform } from 'class-transformer';
 
-export class ChapterInListResponseDto {
+export class PublicChapterInListResponseDto {
   @Expose()
   id: number;
 
   @Expose()
   title: string;
+}
 
+export class MyChapterInListResponseDto extends PublicChapterInListResponseDto {
   @Expose()
   numberOfViews: number;
 
@@ -24,15 +26,21 @@ export class ChapterInListResponseDto {
   updatedAt: Date;
 }
 
-export class ChapterResponseDto {
+export class PublicChapterResponseDto {
   @Expose()
   id: number;
+
+  @Expose()
+  title: string;
 
   @Expose()
   novelId: number;
 
   @Expose()
-  title: string;
+  novelTitle: string;
+
+  @Expose()
+  totalChapters: number;
 
   @Expose()
   content: string;
@@ -47,11 +55,39 @@ export class ChapterResponseDto {
   numberOfVotes: number;
 
   @Expose()
-  isPublished: boolean;
+  @Transform(({ value }): number => value ?? NaN)
+  prevChapterId: number;
+
+  @Expose()
+  @Transform(({ value }): number => value ?? NaN)
+  nextChapterId: number;
 
   @Expose()
   @Transform(({ value }): Date | string => value ?? '')
   publishedAt: Date | null;
+}
+
+export class MyChapterResponseDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  title: string;
+
+  @Expose()
+  novelId: number;
+
+  @Expose()
+  novelTitle: string;
+
+  @Expose()
+  content: string;
+
+  @Expose()
+  numberOfWords: number;
+
+  @Expose()
+  isPublished: boolean;
 
   @Expose()
   createdAt: Date;

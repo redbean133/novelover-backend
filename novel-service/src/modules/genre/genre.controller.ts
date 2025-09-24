@@ -13,16 +13,6 @@ export class GenreController {
     return this.genreService.create(dto);
   }
 
-  @MessagePattern({ cmd: 'genre.get-all' })
-  getAll() {
-    return this.genreService.getAll();
-  }
-
-  @MessagePattern({ cmd: 'genre.get-one-by-id' })
-  getOneById(@Payload() id: number) {
-    return this.genreService.getOneById(id);
-  }
-
   @MessagePattern({ cmd: 'genre.update' })
   update(@Payload() payload: { id: number; data: UpdateGenreDto }) {
     return this.genreService.update(payload.id, payload.data);
@@ -31,5 +21,15 @@ export class GenreController {
   @MessagePattern({ cmd: 'genre.delete' })
   delete(@Payload() id: number) {
     return this.genreService.delete(id);
+  }
+
+  @MessagePattern({ cmd: 'genre.find-all' })
+  findAll() {
+    return this.genreService.findAll();
+  }
+
+  @MessagePattern({ cmd: 'genre.find-one' })
+  findOne(@Payload() id: number) {
+    return this.genreService.findOne(id);
   }
 }

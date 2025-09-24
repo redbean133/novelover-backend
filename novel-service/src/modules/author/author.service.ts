@@ -14,7 +14,7 @@ export class AuthorService {
     private authorRepo: Repository<Author>,
   ) {}
 
-  async getById(id: number): Promise<AuthorResponseDto> {
+  async findOne(id: number): Promise<AuthorResponseDto> {
     const author = await this.authorRepo.findOne({ where: { id } });
     if (!author) {
       throw new RpcException({
