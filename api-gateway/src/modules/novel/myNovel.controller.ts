@@ -109,7 +109,12 @@ export class MyNovelController {
     file: Express.Multer.File,
   ) {
     const uploadResult = await firstValueFrom(
-      this.mediaService.uploadMedia(file, 'novel-cover'),
+      this.mediaService.uploadMedia(
+        file.buffer,
+        'novel-cover',
+        'image',
+        `novel-${novelId}-cover`,
+      ),
     );
 
     return this.myNovelService.update({

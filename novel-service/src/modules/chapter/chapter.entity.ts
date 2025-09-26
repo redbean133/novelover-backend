@@ -49,6 +49,15 @@ export class Chapter {
   @Column({ type: 'int', nullable: true })
   nextChapterId: number | null;
 
+  @Column({ nullable: true })
+  audioUrl?: string;
+
+  @Column({ nullable: true })
+  audioVersion?: number;
+
+  @Column({ default: 1 })
+  contentVersion: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

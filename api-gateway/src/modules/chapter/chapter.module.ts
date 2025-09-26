@@ -4,9 +4,11 @@ import { ChapterController } from './chapter.controller';
 import { ChapterService } from './chapter.service';
 import { MyChapterController } from './myChapter.controller';
 import { MyChapterService } from './myChapter.service';
+import { TtsModule } from '../tts/tts.module';
+import { MediaModule } from '../media/media.module';
 
 @Module({
-  imports: [SharedModule],
+  imports: [SharedModule, TtsModule, MediaModule],
   controllers: [ChapterController, MyChapterController],
   providers: [ChapterService, MyChapterService],
   exports: [ChapterService, MyChapterService],

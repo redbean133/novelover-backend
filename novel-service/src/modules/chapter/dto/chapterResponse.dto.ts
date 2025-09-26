@@ -65,6 +65,17 @@ export class PublicChapterResponseDto {
   @Expose()
   @Transform(({ value }): Date | string => value ?? '')
   publishedAt: Date | null;
+
+  @Expose()
+  @Transform(({ value }): string => value ?? '')
+  audioUrl?: string;
+
+  @Expose()
+  @Transform(({ value }): number => value ?? NaN)
+  audioVersion?: number;
+
+  @Expose()
+  contentVersion: number;
 }
 
 export class MyChapterResponseDto {

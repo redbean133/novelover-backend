@@ -65,6 +65,20 @@ import { JwtModule } from '@nestjs/jwt';
         inject: [ConfigService],
       },
     ]),
+    ClientsModule.registerAsync([
+      {
+        name: 'TTS_SERVICE',
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: configService.get<string>('TTS_SERVICE_HOST') || 'localhost',
+            port: configService.get<number>('TTS_SERVICE_PORT') || 3005,
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
   ],
   exports: [ClientsModule, JwtModule],
 })

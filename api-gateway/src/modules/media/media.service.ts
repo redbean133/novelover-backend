@@ -9,12 +9,14 @@ export class MediaService {
   ) {}
 
   uploadMedia(
-    file: Express.Multer.File,
+    buffer: Buffer,
     folderName?: string,
+    resourceType?: 'auto' | 'image' | 'video' | 'raw',
+    fileName?: string,
   ): Observable<{ url: string }> {
     return this.mediaServiceClient.send(
       { cmd: 'media.upload-media' },
-      { file, folderName },
+      { buffer, folderName, resourceType, fileName },
     );
   }
 }
