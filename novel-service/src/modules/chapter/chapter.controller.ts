@@ -30,4 +30,15 @@ export class ChapterController {
   ) {
     return this.chapterService.findAll(payload.query);
   }
+
+  @MessagePattern({ cmd: 'chapter.update-audio' })
+  updateAudio(
+    @Payload()
+    payload: {
+      chapterId: number;
+      audioUrl: string;
+    },
+  ) {
+    return this.chapterService.updateAudio(payload.chapterId, payload.audioUrl);
+  }
 }

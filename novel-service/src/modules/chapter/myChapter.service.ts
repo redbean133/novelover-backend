@@ -141,15 +141,16 @@ export class MyChapterService {
       });
     }
 
-    const wasPublished = chapter.isPublished;
-    Object.assign(chapter, dto);
-
-    if (dto.content) {
-      chapter.numberOfWords = chapter.content
+    if (dto.content && dto.content !== chapter.content) {
+      chapter.contentVersion = (chapter.contentVersion ?? 1) + 1;
+      chapter.numberOfWords = dto.content
         .trim()
         .split(/\s+/)
         .filter(Boolean).length;
     }
+
+    const wasPublished = chapter.isPublished;
+    Object.assign(chapter, dto);
 
     const intentChangePublish = typeof dto.isPublished !== 'undefined';
     const isNowPublished = intentChangePublish ? dto.isPublished : wasPublished;

@@ -19,4 +19,9 @@ export class ChapterController {
   ) {
     return this.chapterService.findAll({ novelId, page, limit, sort });
   }
+
+  @Get(':id/audio')
+  findAudio(@Param('id') id: number) {
+    return this.chapterService.findAudio(id);
+  }
 }

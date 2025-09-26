@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class UpdateChapterDto {
   @IsString()
@@ -11,4 +11,8 @@ export class UpdateChapterDto {
 
   @IsOptional()
   isPublished?: boolean;
+
+  @IsOptional()
+  @IsUrl()
+  audioUrl?: string;
 }

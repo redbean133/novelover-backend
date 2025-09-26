@@ -109,4 +109,18 @@ export class ChapterService {
       totalPages: Math.ceil(total / limit),
     };
   }
+
+  async updateAudio(chapterId: number, audioUrl: string) {
+    const chapter = await this.chapterRepo.findOneBy({ id: chapterId });
+    if (!chapter) {
+      throw new RpcException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'Không tìm thấy chương truyện',
+      });
+    }
+
+    chapter.audioVersion = chapter.contentVersion;
+    chapter.audioUrl = audioUrl;
+    return await this.chapterRepo.save(chapter);
+  }
 }

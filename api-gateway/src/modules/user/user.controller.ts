@@ -272,7 +272,12 @@ export class UserController {
     if (currentUserId !== userId) throw new ForbiddenException('Access denied');
 
     const uploadResult = await firstValueFrom(
-      this.mediaService.uploadMedia(file, 'user-' + type),
+      this.mediaService.uploadMedia(
+        file.buffer,
+        'user-' + type,
+        'image',
+        `user-${userId}-${type}`,
+      ),
     );
 
     const user = await firstValueFrom(
