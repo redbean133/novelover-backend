@@ -199,11 +199,13 @@ export class UserService {
     if (!ids.length) return [];
     const users = await this.userRepository.find({
       where: { id: In(ids) },
-      select: ['id', 'displayName'],
+      select: ['id', 'displayName', 'avatarUrl', 'username'],
     });
     return users.map((user) => ({
       id: user.id,
       displayName: user.displayName,
+      avatarUrl: user.avatarUrl,
+      username: user.username,
     }));
   }
 }

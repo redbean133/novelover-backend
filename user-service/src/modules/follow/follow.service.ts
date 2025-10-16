@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Follow } from './follow.entity';
@@ -68,21 +63,37 @@ export class FollowService {
     return { success: true };
   }
 
-  async getFollowers(userId: string, currentUserId: string | null) {
-    const follows = await this.followRepo.find({
-      where: { following: { id: userId } },
-      relations: ['follower'],
-      select: {
-        follower: {
-          id: true,
-          username: true,
-          displayName: true,
-          avatarUrl: true,
-        },
-      },
-    });
+  async getFollowers(
+    userId: string,
+    currentUserId: string | null,
+    query: { page?: number; limit?: number; search?: string },
+  ) {
+    const { page = 1, limit = 50, search } = query;
+    const skip = (page - 1) * limit;
 
-    const followers = follows.map((follow) => follow.follower);
+    const queryBuilder = this.followRepo
+      .createQueryBuilder('follow')
+      .leftJoinAndSelect('follow.follower', 'follower')
+      .where('follow.following_id = :userId', { userId });
+
+    if (search) {
+      queryBuilder.andWhere(
+        '(follower.username ILIKE :search OR follower.display_name ILIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    const [follows, total] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    const followers = follows.map((follow) => ({
+      id: follow.follower.id,
+      username: follow.follower.username,
+      displayName: follow.follower.displayName,
+      avatarUrl: follow.follower.avatarUrl,
+    }));
     const followerIds = followers.map((user) => user.id);
 
     if (currentUserId === null) return followers;
@@ -103,27 +114,51 @@ export class FollowService {
       followingOfCurrentUser.map((follow) => follow.following.id),
     );
 
-    return followers.map((follower) => ({
+    const data = followers.map((follower) => ({
       ...follower,
       isFollowing: followingIdsOfCurrentUser.has(follower.id),
     }));
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
-  async getFollowing(userId: string, currentUserId: string | null) {
-    const follows = await this.followRepo.find({
-      where: { follower: { id: userId } },
-      relations: ['following'],
-      select: {
-        following: {
-          id: true,
-          username: true,
-          displayName: true,
-          avatarUrl: true,
-        },
-      },
-    });
+  async getFollowing(
+    userId: string,
+    currentUserId: string | null,
+    query: { page?: number; limit?: number; search?: string },
+  ) {
+    const { page = 1, limit = 50, search } = query;
+    const skip = (page - 1) * limit;
 
-    const following = follows.map((follow) => follow.following);
+    const queryBuilder = this.followRepo
+      .createQueryBuilder('follow')
+      .leftJoinAndSelect('follow.following', 'following')
+      .where('follow.follower_id = :userId', { userId });
+
+    if (search) {
+      queryBuilder.andWhere(
+        '(following.username ILIKE :search OR following.display_name ILIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    const [follows, total] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    const following = follows.map((follow) => ({
+      id: follow.following.id,
+      username: follow.following.username,
+      displayName: follow.following.displayName,
+      avatarUrl: follow.following.avatarUrl,
+    }));
     const followingIds = following.map((user) => user.id);
     if (currentUserId === null) return following;
 
@@ -143,10 +178,18 @@ export class FollowService {
       followingOfCurrentUser.map((follow) => follow.following.id),
     );
 
-    return following.map((follow) => ({
+    const data = following.map((follow) => ({
       ...follow,
       isFollowing: followingIdsOfCurrentUser.has(follow.id),
     }));
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async isFollowing(userId: string, targetId: string) {

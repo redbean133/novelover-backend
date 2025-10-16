@@ -22,11 +22,7 @@ export class MyChapterService {
     private readonly novelService: NovelService,
   ) {}
 
-  async create(
-    dto: CreateChapterDto,
-    currentUserId: string,
-    afterChapterId?: number,
-  ): Promise<Chapter> {
+  async create(dto: CreateChapterDto, currentUserId: string): Promise<Chapter> {
     const isContributor = await this.novelService.isContributorOwnsNovel({
       contributorId: currentUserId,
       novelId: dto.novelId,
@@ -40,9 +36,9 @@ export class MyChapterService {
 
     let previousChapter: Chapter | null = null;
     let nextChapter: Chapter | null = null;
-    if (afterChapterId) {
+    if (dto.afterChapterId) {
       previousChapter = await this.chapterRepo.findOneBy({
-        id: afterChapterId,
+        id: dto.afterChapterId,
       });
       if (!previousChapter) {
         throw new RpcException({
@@ -166,6 +162,10 @@ export class MyChapterService {
 
       if (isNowPublished && !wasPublished) {
         chapter.publishedAt = new Date();
+        this.novelService.updateLatestPublishedChapterTime(
+          chapter.novelId,
+          chapter.publishedAt,
+        );
       } else if (!isNowPublished) {
         chapter.publishedAt = null;
       }

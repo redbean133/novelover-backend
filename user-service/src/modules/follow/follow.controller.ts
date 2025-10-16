@@ -25,17 +25,33 @@ export class FollowController {
   @MessagePattern({ cmd: 'user.get-followers' })
   getFollowers(
     @Payload()
-    { userId, currentUserId }: { userId: string; currentUserId: string | null },
+    {
+      userId,
+      currentUserId,
+      query,
+    }: {
+      userId: string;
+      currentUserId: string | null;
+      query: { page?: number; limit?: number; search?: string };
+    },
   ) {
-    return this.followService.getFollowers(userId, currentUserId);
+    return this.followService.getFollowers(userId, currentUserId, query);
   }
 
   @MessagePattern({ cmd: 'user.get-following' })
   getFollowing(
     @Payload()
-    { userId, currentUserId }: { userId: string; currentUserId: string | null },
+    {
+      userId,
+      currentUserId,
+      query,
+    }: {
+      userId: string;
+      currentUserId: string | null;
+      query: { page?: number; limit?: number; search?: string };
+    },
   ) {
-    return this.followService.getFollowing(userId, currentUserId);
+    return this.followService.getFollowing(userId, currentUserId, query);
   }
 
   @MessagePattern({ cmd: 'user.is-following' })

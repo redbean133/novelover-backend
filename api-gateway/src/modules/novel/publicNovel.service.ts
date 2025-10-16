@@ -15,12 +15,20 @@ export class PublicNovelService {
     private readonly userService: UserService,
   ) {}
 
-  async findAll(payload: {
+  async findAll(query: {
     page?: number;
     limit?: number;
     search?: string;
-    genreId?: number;
+    genreIds?: number[];
     contributorId?: string;
+    completionStatus?: 'completed' | 'ongoing';
+    source?: 'original' | 'collected';
+    sort?: 'ASC' | 'DESC';
+    sortBy?:
+      | 'latestPublishedChapterTime'
+      | 'numberOfViews'
+      | 'numberOfVotes'
+      | 'averageRating';
   }): Promise<NovelsListResponseDto> {
     const { data, total, page, limit, totalPages } = await firstValueFrom<{
       data: PublicNovelInListResponseDto[];
@@ -28,7 +36,7 @@ export class PublicNovelService {
       page: number;
       limit: number;
       totalPages: number;
-    }>(this.novelClient.send({ cmd: 'novel.published.find-all' }, payload));
+    }>(this.novelClient.send({ cmd: 'novel.published.find-all' }, query));
 
     if (!data.length) return { data: [], total, page, limit, totalPages };
 

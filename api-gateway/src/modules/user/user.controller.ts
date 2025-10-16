@@ -306,8 +306,15 @@ export class UserController {
   getFollowers(
     @Param('userId') userId: string,
     @CurrentUserId() currentUserId: string | null,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
   ) {
-    return this.userService.getFollowers(userId, currentUserId);
+    return this.userService.getFollowers(userId, currentUserId, {
+      page,
+      limit,
+      search,
+    });
   }
 
   @UseGuards(OptionalAuthGuard)
@@ -315,8 +322,15 @@ export class UserController {
   getFollowing(
     @Param('userId') userId: string,
     @CurrentUserId() currentUserId: string | null,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
   ) {
-    return this.userService.getFollowing(userId, currentUserId);
+    return this.userService.getFollowing(userId, currentUserId, {
+      page,
+      limit,
+      search,
+    });
   }
 
   @UseGuards(AuthGuard)

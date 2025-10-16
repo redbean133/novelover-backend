@@ -5,13 +5,14 @@
     "start:novel": "npm --prefix ./novel-service start",
     "start:email": "npm --prefix ./email-service start",
     "start:media": "npm --prefix ./media-service start",
-    "start:tts": "npm --prefix ./text-to-speech-service start",
+    "start:ai": "npm --prefix ./ai-service start",
+    "start:crawler": "npm --prefix ./crawler-service start",
     "restart:gateway": "npm --prefix ./api-gateway restart",
     "restart:user": "npm --prefix ./user-service restart",
     "restart:novel": "npm --prefix ./novel-service restart",
     "restart:email": "npm --prefix ./email-service restart",
     "restart:media": "npm --prefix ./media-service restart",
-    "start:all": "npm-run-all --parallel start:gateway start:user start:novel start:email start:media start:tts"
+    "start:all": "npm-run-all --parallel start:gateway start:user start:novel start:email start:media start:ai start:crawler"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5"

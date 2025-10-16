@@ -10,15 +10,34 @@ export class PublicNovelController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('search') search?: string,
-    @Query('genreId') genreId?: number,
+    @Query('genreId') genreIdsParam?: number[],
     @Query('contributorId') contributorId?: string,
+    @Query('completionStatus') completionStatus?: 'completed' | 'ongoing',
+    @Query('source') source?: 'original' | 'collected',
+    @Query('sort') sort?: 'ASC' | 'DESC',
+    @Query('sortBy')
+    sortBy?:
+      | 'latestPublishedChapterTime'
+      | 'numberOfViews'
+      | 'numberOfVotes'
+      | 'averageRating',
   ) {
+    const genreIds = Array.isArray(genreIdsParam)
+      ? genreIdsParam.map((id) => Number(id))
+      : genreIdsParam
+        ? [Number(genreIdsParam)]
+        : [];
+
     return this.publicNovelService.findAll({
       page,
       limit,
       search,
-      genreId,
+      genreIds,
       contributorId,
+      completionStatus,
+      source,
+      sort,
+      sortBy,
     });
   }
 

@@ -1,7 +1,3 @@
-import { Author } from 'src/modules/author/author.entity';
-import { Chapter } from 'src/modules/chapter/chapter.entity';
-import { Genre } from 'src/modules/genre/genre.entity';
-import { Review } from 'src/modules/review/review.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -14,6 +10,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Author } from '../author/author.entity';
+import { Genre } from '../genre/genre.entity';
+import { Review } from '../review/review.entity';
+import { Chapter } from '../chapter/chapter.entity';
 
 @Entity()
 export class Novel {
@@ -23,7 +23,7 @@ export class Novel {
   @Column({ length: 255 })
   title: string;
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   coverUrl?: string;
 
   @Column({ default: false })
@@ -45,6 +45,9 @@ export class Novel {
   numberOfReviews: number;
 
   @Column({ default: 0 })
+  totalReviewPoints: number;
+
+  @Column({ default: 0 })
   numberOfVotes: number;
 
   @Column({ default: 0 })
@@ -53,7 +56,7 @@ export class Novel {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @Column({ type: 'decimal', precision: 3, scale: 2, default: 0 })
+  @Column({ type: 'decimal', precision: 2, scale: 1, default: 0 })
   averageRating: number;
 
   @Column({ default: false })
@@ -73,6 +76,9 @@ export class Novel {
 
   @UpdateDateColumn()
   lastUpdatedAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  latestPublishedChapterTime?: Date;
 
   @DeleteDateColumn()
   deletedAt?: Date;

@@ -3,6 +3,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CreateNovelDto } from './dto/createNovel.dto';
 import { UpdateNovelDto } from './dto/updateNovel.dto';
 import { MyNovelService } from './myNovel.service';
+import { CrawlerNovelDto } from './dto/crawlerNovel.dto';
 
 @Controller()
 export class MyNovelController {
@@ -11,6 +12,11 @@ export class MyNovelController {
   @MessagePattern({ cmd: 'novel.create' })
   create(@Payload() dto: CreateNovelDto) {
     return this.myNovelService.create(dto);
+  }
+
+  @MessagePattern({ cmd: 'novel.create-from-crawler' })
+  createFromCrawler(@Payload() dto: CrawlerNovelDto) {
+    return this.myNovelService.createFromCrawler(dto);
   }
 
   @MessagePattern({ cmd: 'novel.update' })

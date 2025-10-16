@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Novel } from './novel.entity';
 import { Repository } from 'typeorm';
 import { RpcException } from '@nestjs/microservices';
-import { defaultPageNumber, defaultPageSize } from 'src/utils/constants';
 
 @Injectable()
 export class NovelService {
@@ -11,64 +10,6 @@ export class NovelService {
     @InjectRepository(Novel)
     private novelRepo: Repository<Novel>,
   ) {}
-
-  async findAll(query: {
-    page?: number;
-    limit?: number;
-    genreId?: number;
-    contributorId?: string;
-    search?: string;
-    status?: 'published' | 'draft';
-  }) {
-    const { genreId, contributorId, search, status = 'published' } = query;
-    const page = query?.page ? +query.page : defaultPageNumber;
-    const limit = query?.limit ? +query.limit : defaultPageSize;
-
-    const queryBuilder = this.novelRepo
-      .createQueryBuilder('novel')
-      .leftJoinAndSelect('novel.author', 'author')
-      .leftJoinAndSelect('novel.genres', 'genres');
-
-    if (genreId) {
-      queryBuilder.innerJoin('novel.genres', 'genre', 'genre.id = :genreId', {
-        genreId: +genreId,
-      });
-    }
-
-    if (contributorId) {
-      queryBuilder.andWhere('novel.contributorId = :contributorId', {
-        contributorId,
-      });
-    }
-
-    if (search) {
-      queryBuilder.andWhere('novel.title LIKE :search', {
-        search: `%${search}%`,
-      });
-    }
-
-    if (status === 'published') {
-      queryBuilder.andWhere('novel.isPublished = true');
-    } else if (status === 'draft') {
-      queryBuilder.andWhere('novel.isPublished = false');
-    }
-
-    const total = await queryBuilder.getCount();
-
-    queryBuilder
-      .skip((page - 1) * limit)
-      .take(limit)
-      .orderBy('novel.lastUpdatedAt', 'DESC');
-
-    const data = await queryBuilder.getMany();
-    return {
-      data,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
-  }
 
   async findOne(id: number) {
     const queryBuilder = this.novelRepo
@@ -106,13 +47,30 @@ export class NovelService {
       Novel,
       | 'numberOfChapters'
       | 'numberOfPublishedChapters'
-      | 'numberOfReviews'
       | 'numberOfVotes'
       | 'numberOfViews'
     >,
     value: number,
   ) {
     await this.novelRepo.increment({ id: novelId }, field, value);
+  }
+
+  async updateRating(novelId: number, point: number, count: number) {
+    await this.novelRepo
+      .createQueryBuilder()
+      .update()
+      .set({
+        totalReviewPoints: () => `"total_review_points" + ${point}`,
+        numberOfReviews: () => `"number_of_reviews" + ${count}`,
+        averageRating: () =>
+          `CASE 
+         WHEN "number_of_reviews" + ${count} > 0 
+         THEN ("total_review_points" + ${point})::float / ("number_of_reviews" + ${count}) 
+         ELSE 0 
+       END`,
+      })
+      .where('id = :id', { id: novelId })
+      .execute();
   }
 
   async handlePublishAndCompleteState(novelId: number) {
@@ -132,5 +90,9 @@ export class NovelService {
         },
       );
     }
+  }
+
+  updateLatestPublishedChapterTime(novelId: number, time: Date) {
+    this.novelRepo.update(novelId, { latestPublishedChapterTime: time });
   }
 }

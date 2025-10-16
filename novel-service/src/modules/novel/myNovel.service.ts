@@ -14,6 +14,7 @@ import {
   FullInfoNovelResponseDto,
   MyNovelInListResponseDto,
 } from './dto/novelResponse.dto';
+import { CrawlerNovelDto } from './dto/crawlerNovel.dto';
 
 @Injectable()
 export class MyNovelService {
@@ -52,6 +53,33 @@ export class MyNovelService {
     });
   }
 
+  async createFromCrawler(
+    crawlerNovelDto: CrawlerNovelDto,
+  ): Promise<FullInfoNovelResponseDto> {
+    const genreIds = await this.genreService.resolveByNames(
+      crawlerNovelDto.genres || [],
+    );
+
+    const createNovelDto: CreateNovelDto = {
+      title: crawlerNovelDto.title,
+      isOriginal: false,
+      contributorId: crawlerNovelDto.contributorId,
+      description: crawlerNovelDto.description,
+      authorName: crawlerNovelDto.authorName,
+      genreIds,
+    };
+
+    const novel = await this.create(createNovelDto);
+    const updatedNovel = await this.update(
+      novel.id,
+      crawlerNovelDto.contributorId,
+      {
+        coverUrl: crawlerNovelDto.coverUrl,
+      },
+    );
+    return updatedNovel;
+  }
+
   async update(
     id: number,
     currentUserId: string,
@@ -87,6 +115,14 @@ export class MyNovelService {
     }
 
     Object.assign(novel, rest);
+
+    if (novel.isPublished && !novel.description) {
+      throw new RpcException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Truyện đã xuất bản phải có phần giới thiệu',
+      });
+    }
+
     await this.novelRepo.save(novel);
 
     const updatedNovel = await this.findOne({ id, currentUserId });
@@ -179,12 +215,31 @@ export class MyNovelService {
     page: number;
     limit: number;
   }) {
-    const result = await this.novelService.findAll(query);
+    const { contributorId, status = 'published', page = 1, limit = 12 } = query;
+
+    const queryBuilder = this.novelRepo
+      .createQueryBuilder('novel')
+      .leftJoinAndSelect('novel.author', 'author')
+      .leftJoinAndSelect('novel.genres', 'genres')
+      .andWhere('novel.contributorId = :contributorId', {
+        contributorId,
+      })
+      .andWhere(
+        `novel.isPublished = ${status === 'published' ? 'true' : 'false'}`,
+      )
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('novel.lastUpdatedAt', 'DESC');
+
+    const [data, total] = await queryBuilder.getManyAndCount();
     return {
-      ...result,
-      data: plainToInstance(MyNovelInListResponseDto, result.data, {
+      data: plainToInstance(MyNovelInListResponseDto, data, {
         excludeExtraneousValues: true,
       }),
+      total,
+      page: +page,
+      limit: +limit,
+      totalPages: Math.ceil(total / limit),
     };
   }
 

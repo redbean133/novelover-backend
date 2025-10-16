@@ -1,19 +1,22 @@
-import { Novel } from 'src/modules/novel/novel.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  Unique,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
+import { Novel } from '../novel/novel.entity';
 
 @Entity()
-@Unique(['novel', 'userId'])
+@Index(['novelId', 'userId'], { unique: true })
 export class Review {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column()
+  novelId: number;
 
   @ManyToOne(() => Novel, (novel) => novel.reviews, { onDelete: 'CASCADE' })
   novel: Novel;

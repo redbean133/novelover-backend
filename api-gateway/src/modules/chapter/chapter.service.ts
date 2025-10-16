@@ -2,17 +2,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { PublicChapterResponseDto } from './dto/chapterResponse.dto';
-import { TtsService } from '../tts/tts.service';
 import { MediaService } from '../media/media.service';
-import { MyChapterService } from './myChapter.service';
+import { AIService } from '../ai/ai.service';
 
 @Injectable()
 export class ChapterService {
   constructor(
     @Inject('NOVEL_SERVICE') private readonly novelClient: ClientProxy,
-    private readonly ttsService: TtsService,
+    private readonly aiService: AIService,
     private readonly mediaService: MediaService,
-    private readonly myChapterService: MyChapterService,
   ) {}
 
   findOne(chapterId: number) {
@@ -46,7 +44,7 @@ export class ChapterService {
     if (chapter.audioVersion === chapter.contentVersion) return chapter;
 
     const newVersionAudioDataBuffer = await firstValueFrom<Buffer>(
-      this.ttsService.generateSpeech({ text: chapter.content, voiceName }),
+      this.aiService.generateSpeech({ text: chapter.content, voiceName }),
     );
 
     const uploadResult = await firstValueFrom(
@@ -66,5 +64,26 @@ export class ChapterService {
     );
 
     return this.findOne(chapterId);
+  }
+
+  checkVote(chapterId: number, userId: string) {
+    return this.novelClient.send(
+      { cmd: 'chapter.check-vote' },
+      { chapterId, userId },
+    );
+  }
+
+  vote(chapterId: number, userId: string) {
+    return this.novelClient.send(
+      { cmd: 'chapter.vote' },
+      { chapterId, userId },
+    );
+  }
+
+  unvote(chapterId: number, userId: string) {
+    return this.novelClient.send(
+      { cmd: 'chapter.unvote' },
+      { chapterId, userId },
+    );
   }
 }

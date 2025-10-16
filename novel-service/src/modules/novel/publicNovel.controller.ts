@@ -10,10 +10,17 @@ export class PublicNovelController {
   findAll(payload: {
     page?: number;
     limit?: number;
-    genreId?: number;
-    contributorId?: string;
     search?: string;
-    status?: 'published' | 'draft';
+    genreIds?: number[];
+    contributorId?: string;
+    completionStatus?: 'completed' | 'ongoing';
+    source?: 'original' | 'collected';
+    sort?: 'ASC' | 'DESC';
+    sortBy?:
+      | 'latestPublishedChapterTime'
+      | 'numberOfViews'
+      | 'numberOfVotes'
+      | 'averageRating';
   }) {
     return this.publicNovelService.findAll(payload);
   }

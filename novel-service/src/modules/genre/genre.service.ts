@@ -10,6 +10,7 @@ import {
   GenreResponseDto,
   GenreWithoutDescriptionResponseDto,
 } from './dto/genreResponse.dto';
+import { formatSentenceCase } from 'src/utils/constants';
 
 @Injectable()
 export class GenreService {
@@ -63,7 +64,7 @@ export class GenreService {
   }
 
   async findAll() {
-    const genres = await this.genreRepo.find();
+    const genres = await this.genreRepo.find({ order: { name: 'ASC' } });
     return plainToInstance(GenreWithoutDescriptionResponseDto, genres, {
       excludeExtraneousValues: true,
     });
@@ -86,5 +87,22 @@ export class GenreService {
     return this.genreRepo.findBy({
       id: In(ids),
     });
+  }
+
+  async resolveByNames(names: string[]): Promise<number[]> {
+    if (!names || names.length === 0) return [];
+
+    const resultIds: number[] = [];
+    for (const name of names) {
+      const normalized = formatSentenceCase(name);
+      let genre = await this.genreRepo.findOne({ where: { name: normalized } });
+      if (!genre) {
+        genre = this.genreRepo.create({ name: normalized });
+        await this.genreRepo.save(genre);
+      }
+      resultIds.push(genre.id);
+    }
+
+    return resultIds;
   }
 }
