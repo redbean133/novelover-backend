@@ -9,7 +9,13 @@ export class MyChapterController {
   constructor(private readonly myChapterService: MyChapterService) {}
 
   @MessagePattern({ cmd: 'chapter.create' })
-  create(@Payload() payload: { dto: CreateChapterDto; currentUserId: string }) {
+  create(
+    @Payload()
+    payload: {
+      dto: CreateChapterDto;
+      currentUserId: string;
+    },
+  ) {
     return this.myChapterService.create(payload.dto, payload.currentUserId);
   }
 

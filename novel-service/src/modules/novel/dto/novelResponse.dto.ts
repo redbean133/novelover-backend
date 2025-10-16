@@ -78,6 +78,9 @@ export class PublicNovelInListResponseDto {
   numberOfViews: number;
 
   @Expose()
+  averageRating: number;
+
+  @Expose()
   @Type(() => AuthorDto)
   author: AuthorDto;
 
@@ -95,9 +98,6 @@ export class PublicNovelResponseDto extends PublicNovelInListResponseDto {
 
   @Expose()
   numberOfVotes: number;
-
-  @Expose()
-  averageRating: number;
 
   @Expose()
   @Transform(({ value }): Date | string => value ?? '')

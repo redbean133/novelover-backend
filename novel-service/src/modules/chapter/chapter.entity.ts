@@ -5,8 +5,10 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Novel } from '../novel/novel.entity';
+import { ChapterVote } from '../chapter-vote/chapterVote.entity';
 
 @Entity()
 export class Chapter {
@@ -40,7 +42,14 @@ export class Chapter {
   @Column({ type: 'timestamp', nullable: true })
   publishedAt: Date | null;
 
-  @Column({ type: 'bigint', nullable: false })
+  @Column({
+    type: 'bigint',
+    nullable: false,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string): number => Number(value),
+    },
+  })
   orderIndex: number;
 
   @Column({ type: 'int', nullable: true })
@@ -63,4 +72,7 @@ export class Chapter {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => ChapterVote, (vote) => vote.chapter)
+  votes: ChapterVote[];
 }

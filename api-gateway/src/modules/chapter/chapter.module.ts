@@ -4,13 +4,14 @@ import { ChapterController } from './chapter.controller';
 import { ChapterService } from './chapter.service';
 import { MyChapterController } from './myChapter.controller';
 import { MyChapterService } from './myChapter.service';
-import { TtsModule } from '../tts/tts.module';
 import { MediaModule } from '../media/media.module';
+import { AIModule } from '../ai/ai.module';
+import { AudioGateway } from './audio.gateway';
 
 @Module({
-  imports: [SharedModule, TtsModule, MediaModule],
+  imports: [SharedModule, AIModule, MediaModule],
   controllers: [ChapterController, MyChapterController],
-  providers: [ChapterService, MyChapterService],
+  providers: [ChapterService, MyChapterService, AudioGateway],
   exports: [ChapterService, MyChapterService],
 })
 export class ChapterModule {}

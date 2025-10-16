@@ -98,17 +98,25 @@ export class UserService {
     );
   }
 
-  getFollowers(userId: string, currentUserId: string | null): Observable<any> {
+  getFollowers(
+    userId: string,
+    currentUserId: string | null,
+    query: { page?: number; limit?: number; search?: string },
+  ): Observable<any> {
     return this.userServiceClient.send(
       { cmd: 'user.get-followers' },
-      { userId, currentUserId },
+      { userId, currentUserId, query },
     );
   }
 
-  getFollowing(userId: string, currentUserId: string | null): Observable<any> {
+  getFollowing(
+    userId: string,
+    currentUserId: string | null,
+    query: { page?: number; limit?: number; search?: string },
+  ): Observable<any> {
     return this.userServiceClient.send(
       { cmd: 'user.get-following' },
-      { userId, currentUserId },
+      { userId, currentUserId, query },
     );
   }
 
@@ -120,9 +128,8 @@ export class UserService {
   }
 
   getUsersByIds(ids: string[]) {
-    return this.userServiceClient.send<{ id: string; displayName: string }[]>(
-      { cmd: 'user.get-by-ids' },
-      ids,
-    );
+    return this.userServiceClient.send<
+      { id: string; displayName: string; avatarUrl: string; username: string }[]
+    >({ cmd: 'user.get-by-ids' }, ids);
   }
 }

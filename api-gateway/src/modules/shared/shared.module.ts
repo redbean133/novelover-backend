@@ -67,13 +67,29 @@ import { JwtModule } from '@nestjs/jwt';
     ]),
     ClientsModule.registerAsync([
       {
-        name: 'TTS_SERVICE',
+        name: 'AI_SERVICE',
         imports: [ConfigModule],
         useFactory: (configService: ConfigService) => ({
           transport: Transport.TCP,
           options: {
-            host: configService.get<string>('TTS_SERVICE_HOST') || 'localhost',
-            port: configService.get<number>('TTS_SERVICE_PORT') || 3005,
+            host:
+              configService.get<string>('AI_SERVICE_TCP_HOST') || 'localhost',
+            port: configService.get<number>('AI_SERVICE_TCP_PORT') || 3005,
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
+    ClientsModule.registerAsync([
+      {
+        name: 'CRAWLER_SERVICE',
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host:
+              configService.get<string>('CRAWLER_SERVICE_HOST') || 'localhost',
+            port: configService.get<number>('CRAWLER_SERVICE_PORT') || 3007,
           },
         }),
         inject: [ConfigService],

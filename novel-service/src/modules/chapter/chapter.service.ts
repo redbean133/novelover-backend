@@ -9,6 +9,7 @@ import {
   PublicChapterInListResponseDto,
   PublicChapterResponseDto,
 } from './dto/chapterResponse.dto';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class ChapterService {
@@ -16,7 +17,26 @@ export class ChapterService {
     @InjectRepository(Chapter)
     private chapterRepo: Repository<Chapter>,
     private readonly novelService: NovelService,
+    private readonly redisService: RedisService,
   ) {}
+
+  async findBasicById(chapterId: number) {
+    const chapter = await this.chapterRepo.findOneBy({ id: chapterId });
+    if (!chapter) {
+      throw new RpcException({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'Không tìm thấy chương truyện',
+      });
+    }
+    const novel = await this.novelService.findOne(chapter.novelId);
+    if (!novel.isPublished || !chapter.isPublished) {
+      throw new RpcException({
+        statusCode: HttpStatus.FORBIDDEN,
+        message: 'Bạn không có quyền xem chương truyện này',
+      });
+    }
+    return chapter;
+  }
 
   async findOne(chapterId: number) {
     const chapter = await this.chapterRepo.findOneBy({ id: chapterId });
@@ -34,6 +54,9 @@ export class ChapterService {
         message: 'Bạn không có quyền xem chương truyện này',
       });
     }
+
+    void this.redisService.increment(`chapter:${chapterId}:views`);
+    void this.redisService.increment(`novel:${chapter.novelId}:views`);
 
     const [prevPublishedChapter] = await this.chapterRepo.find({
       where: {
@@ -122,5 +145,13 @@ export class ChapterService {
     chapter.audioVersion = chapter.contentVersion;
     chapter.audioUrl = audioUrl;
     return await this.chapterRepo.save(chapter);
+  }
+
+  async updateCounter(
+    chapterId: number,
+    field: keyof Pick<Chapter, 'numberOfVotes' | 'numberOfViews'>,
+    value: number,
+  ) {
+    await this.chapterRepo.increment({ id: chapterId }, field, value);
   }
 }
